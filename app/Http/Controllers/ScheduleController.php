@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ScheduleMail;
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ScheduleController extends Controller
 {
@@ -18,13 +20,7 @@ class ScheduleController extends Controller
 
     public function listar()
     {
-        $agendamentos = Schedule::all()->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'start' => $item->hour,
-            ];
-        });
+        $agendamentos = Schedule::all();
 
         return response()->json($agendamentos);
     }
@@ -33,23 +29,47 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'string|required',
-            'hour' => 'required|date_format:Y-m-d H:i:s|after:today|before:18:00',
-            'address' => 'string|required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'init' => 'required|date',
+            'end' => 'required|date|after:init',
+            'email' => 'required|email',
+            'phone' => 'required'
         ]);
 
-        $hour = Carbon::parse($request->hour);
-        if ($hour->isWeekend() || $hour->hour < 8 || $hour->hour >= 18) {
-            return response()->json(['error' => 'Agendamento apenas em dias uteis']);
+        $validated['init'] = Carbon::parse($request->init)->timezone('America/Sao_Paulo');
+        $validated['end'] = Carbon::parse($request->end)->timezone('America/Sao_Paulo');
+
+        try {
+            $conflict = Schedule::where(function ($query) use ($request) {
+                $query->where('init', [$request->init, $request->end])
+                    ->orWhere('end', [$request->inti, $request->end]);
+            })->exists();
+
+            if ($conflict) {
+                return response()->json(['error' => 'Horario indisponivel']);
+            }
+
+            $schedule = Schedule::create($validated);
+            if ($schedule) {
+                Mail::send(new ScheduleMail($schedule));
+            }
+
+            return response()->noContent();
+            // return response()->json([
+            //     'message' => 'Agendamento criado com sucesso!',
+            //     'schedule' => $schedule
+            // ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao criar o agendamento.',
+                'details' => $e->getMessage()
+            ], 500);
         }
 
-        if (!Schedule::scopeAvailable($request->hour)) {
-            return response()->json(['error' => 'Horario indisponivel'], 422);
-        }
 
-        Schedule::create($request->validated());
-        return response()->json(['message' => 'Agendamento realizado com sucesso'], 201);
+        return response()->json($schedule);
     }
 
     /**
@@ -73,6 +93,8 @@ class ScheduleController extends Controller
      */
     public function destroy(Schedule $schedule)
     {
-        //
+        $schedule->delete();
+
+        return response()->noContent(200);
     }
 }

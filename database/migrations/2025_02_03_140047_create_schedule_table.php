@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('schedule', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('email');
+            $table->string('phone');
             $table->string('address');
-            $table->dateTime('hour');
+            $table->dateTime('init');
+            $table->dateTime('end');
             $table->timestamps();
         });
     }

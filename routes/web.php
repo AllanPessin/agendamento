@@ -17,5 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('agenda', [ScheduleController::class, 'index'])->name('schedule.listar');
-Route::post('agenda-store', [ScheduleController::class, 'store'])->name('schedule.store');
+Route::get('agenda', [ScheduleController::class, 'index'])->name('schedule.index');
+Route::get('eventos', [ScheduleController::class, 'listar'])->name('schedule.listar');
+
+
+Route::post('schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+Route::delete('schedule/{schedule}', [ScheduleController::class, 'destroy'])->name('schedule.store');

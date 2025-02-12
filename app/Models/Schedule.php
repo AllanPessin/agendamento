@@ -9,10 +9,7 @@ class Schedule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'address', 'hour'];
+    protected $table = 'schedule';
 
-    public static function scopeAvailable($hour): bool
-    {
-        return self::where('hour', $hour)->doesntExist();
-    }
+    protected $fillable = ['name', 'address', 'init', 'end', 'email', 'phone'];
 }
