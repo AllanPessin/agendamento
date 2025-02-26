@@ -43,24 +43,29 @@ class ScheduleController extends Controller
 
         try {
             $conflict = Schedule::where(function ($query) use ($request) {
-                $query->where('init', [$request->init, $request->end])
-                    ->orWhere('end', [$request->inti, $request->end]);
+                $query->whereBetween('init', [$request->init, $request->end])
+                    ->orWhereBetween('end', [$request->init, $request->end]);
             })->exists();
+
 
             if ($conflict) {
                 return response()->json(['error' => 'Horario indisponivel']);
             }
 
             $schedule = Schedule::create($validated);
+
             if ($schedule) {
-                Mail::send(new ScheduleMail($schedule));
+                try {
+                    Mail::send(new ScheduleMail($schedule));
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'error' => 'Erro ao enviar o e-mail.',
+                        'details' => $e->getMessage()
+                    ], 500);
+                }
             }
 
-            return response()->noContent();
-            // return response()->json([
-            //     'message' => 'Agendamento criado com sucesso!',
-            //     'schedule' => $schedule
-            // ], 201);
+            return response()->json(['success' => 'Conteudo criado com sucesso.']);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro ao criar o agendamento.',

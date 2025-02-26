@@ -1,8 +1,8 @@
 <h1>
-    {{ $this->schedule->name }}
+    {{ $schedule->name }}
 </h1>
-<p>{{ $this->schedule->address }}</p>
-<p>{{ $this->schedule->email }}</p>
-<p>{{ $this->schedule->phone }}</p>
-<p>{{ $this->schedule->init }}</p>
-<p>{{ $this->schedule->end }}</p>
+<p>{{ $schedule->address }}</p>
+<p>{{ $schedule->email }}</p>
+<p>{{ $schedule->phone }}</p>
+<p>{{ $schedule->init }}</p>
+<p>{{ $schedule->end }}</p>

@@ -156,7 +156,6 @@ let calendar = new Calendar(calendarEl, {
                         alert("Visita técnica agendada!");
                         location.reload();
                         closeModal();
-                        console.log("teste");
                     })
                     .catch((error) => {
                         alert("Erro ao agendar visita.");
@@ -182,6 +181,7 @@ let calendar = new Calendar(calendarEl, {
         let schedule = info.event;
         let modalDetails = document.createElement("div");
         modalDetails.id = "modalDetails";
+        const userCanDelete = userRole == "SuperAdmin" ? true : false;
         modalDetails.innerHTML = `
         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;
@@ -196,11 +196,15 @@ let calendar = new Calendar(calendarEl, {
                 })} - ${schedule.end.toLocaleTimeString("pt-BR", {
             timeZone: "UTC",
         })}</b></p>
-                <p><b>E-mail:${schedule.email}</b></p>
-                <p><b>Telefone:${schedule.phone}</b></p>
+                <p><b>E-mail:${schedule.extendedProps.email}</b></p>
+                <p><b>Telefone:${schedule.extendedProps.phone}</b></p>
                 <div class="d-flex justify-content-between">
                     <button id="btnClose" class="btn btn-warning">Fechar</button>
-                    <button id="btnExclude" class="btn btn-danger">Excluir</button>
+                    ${
+                        userCanDelete
+                            ? `<button id="btnExclude" class="btn btn-danger">Excluir</button>`
+                            : ""
+                    }
                 </div>
                 
             </div>
@@ -208,19 +212,9 @@ let calendar = new Calendar(calendarEl, {
         `;
 
         document.body.append(modalDetails);
-
-        document
-            .getElementById("btnClose")
-            .addEventListener("click", function () {
-                let modalDetails = document.getElementById("modalDetails");
-                if (modalDetails) {
-                    modalDetails.remove();
-                }
-            });
-
-        document
-            .getElementById("btnExclude")
-            .addEventListener("click", function () {
+        const buttonExclude = document.getElementById("btnExclude");
+        if (buttonExclude) {
+            buttonExclude.addEventListener("click", function () {
                 let id = schedule.id;
                 schedule.remove();
                 modalDetails.remove();
@@ -229,6 +223,16 @@ let calendar = new Calendar(calendarEl, {
                         "Content-Type": "application/json",
                     },
                 });
+            });
+        }
+
+        document
+            .getElementById("btnClose")
+            .addEventListener("click", function () {
+                let modalDetails = document.getElementById("modalDetails");
+                if (modalDetails) {
+                    modalDetails.remove();
+                }
             });
     },
 });

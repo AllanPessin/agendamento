@@ -20,9 +20,7 @@ class ScheduleMail extends Mailable
      */
     public function __construct(
         protected Schedule $schedule
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the message envelope.
@@ -31,15 +29,12 @@ class ScheduleMail extends Mailable
     {
         return new Envelope(
             subject: 'Visita agendada',
-            from: new Address("allan.pessin@outlook.com", "Allan S. Pessin"),
-            to: new Address("allan.pessin@outlook.com"),
-            cc: new Address($this->schedule->email),
+            // from: new Address('allan.pessin@outlook.com', 'Allan S. Pessin')
+            from: new Address(config('mail.from.address'), config('mail.from.name')),
+            to: new Address(config('mail.from.address'), config('mail.from.address')),
             replyTo: [
                 new Address($this->schedule->email, $this->schedule->name),
             ],
-        );
-        return new Envelope(
-            subject: 'Schedule Mail',
         );
     }
 
@@ -49,7 +44,8 @@ class ScheduleMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.scheduleMail',
+            markdown: 'mail.scheduleMail',
+            with: ['schedule' => $this->schedule],
         );
     }
 

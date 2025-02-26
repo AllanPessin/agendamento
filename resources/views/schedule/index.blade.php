@@ -10,6 +10,10 @@
 </head>
 
 <body>
+    <script>
+        var userRole = "SuperAdmin";
+    </script>
+
 
     <h2 style="text-align: center;">Agendamento de Visitas Técnicas</h2>
 
